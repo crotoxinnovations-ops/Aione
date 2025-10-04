@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aizone</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; transition: background 0.4s, color 0.4s; }
+    body.dark { background-color: #111; color: white; }
+    #app { padding: 20px; }
+    #searchInput { margin: 10px 0 20px; padding: 10px; width: 100%; max-width: 400px; border-radius: 10px; border: none; font-size: 16px; }
+    #modeToggle { padding: 8px 14px; font-size: 14px; border-radius: 8px; border: none; background: cyan; cursor: pointer; margin-bottom: 10px; }
+    .tool-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .tool-card { display: flex; flex-direction: column; align-items: center; background: #222; border-radius: 12px; padding: 15px; text-align: center; text-decoration: none; color: white; transition: transform 0.2s, box-shadow 0.3s; }
+    .tool-card:hover { transform: scale(1.05); box-shadow: 0 0 10px cyan; }
+    .tool-card img { width: 48px; height: 48px; margin-bottom: 10px; border-radius: 8px; }
+    .tool-description { font-size: 13px; margin-top: 5px; color: #ccc; text-align: center; }
+  </style>
+</head>
+<body class="dark">
+  <div id="app">
+    <button id="modeToggle">Toggle Mode</button>
+    <input type="text" id="searchInput" placeholder="Search AI tools..." />
+    <div id="categoryFilters" style="margin-bottom: 20px;"></div>
+    <div id="tools" class="tool-container"></div>
+  </div>
+  <script>
+    const tools = [
+  { name: "ChatGPT", url: "https://chat.openai.com", desc: "AI chatbot by OpenAI." },
+  { name: "Notion AI", url: "https://www.notion.so", desc: "AI-powered writing in Notion." },
+  { name: "Jasper", url: "https://www.jasper.ai", desc: "Content creation assistant." },
+  { name: "Copy.ai", url: "https://www.copy.ai", desc: "Marketing copy generator." },
+  { name: "Writesonic", url: "https://writesonic.com", desc: "AI writing assistant and chatbot." },
+  { name: "QuillBot", url: "https://quillbot.com", desc: "Paraphrasing tool with grammar help." },
+  { name: "Grammarly", url: "https://grammarly.com", desc: "Grammar and writing enhancement." },
+  { name: "Wordtune", url: "https://www.wordtune.com", desc: "Rewrite and improve your writing." },
+  { name: "Scispace", url: "https://scispace.com", desc: "AI research paper summarizer." },
+  { name: "Perplexity AI", url: "https://www.perplexity.ai", desc: "Conversational search engine." },
+  { name: "Socratic", url: "https://socratic.org", desc: "AI tutor by Google for students." },
+  { name: "Jenni", url: "https://jenni.ai", desc: "AI writing tool for academics." },
+  { name: "Pictory", url: "https://pictory.ai", desc: "Turn text into engaging videos." },
+  { name: "Synthesia", url: "https://www.synthesia.io", desc: "Create AI videos from text." },
+  { name: "Runway ML", url: "https://runwayml.com", desc: "Video editing with AI features." },
+  { name: "Fliki", url: "https://fliki.ai", desc: "Text-to-video with AI voices." },
+  { name: "Descript", url: "https://www.descript.com", desc: "Video and audio editor with AI." },
+  { name: "Murf", url: "https://murf.ai", desc: "Realistic AI voice generator." },
+  { name: "Leonardo AI", url: "https://leonardo.ai", desc: "AI art generator with presets." },
+  { name: "Dream by Wombo", url: "https://wombo.art", desc: "Create stunning AI artworks." },
+  { name: "Midjourney", url: "https://www.midjourney.com", desc: "AI image generator via Discord." },
+  { name: "DALL·E", url: "https://openai.com/dall-e", desc: "Image generator from text by OpenAI." },
+  { name: "Remove.bg", url: "https://www.remove.bg", desc: "Remove image background instantly." },
+  { name: "Cleanup.pictures", url: "https://cleanup.pictures", desc: "Remove unwanted objects from photos." },
+  { name: "PhotoRoom", url: "https://www.photoroom.com", desc: "Product image background remover." },
+  { name: "Canva AI", url: "https://www.canva.com/ai-image-generator", desc: "Design with AI image tools." },
+  { name: "Looka", url: "https://looka.com", desc: "AI logo maker and branding." },
+  { name: "Runpod", url: "https://runpod.io", desc: "Cloud GPU for AI apps." },
+  { name: "Durable", url: "https://durable.co", desc: "AI website builder for businesses." },
+  { name: "Browse AI", url: "https://www.browse.ai", desc: "Web scraping automation tool." },
+  { name: "Fireflies", url: "https://fireflies.ai", desc: "Meeting transcription and notes." },
+  { name: "Otter.ai", url: "https://otter.ai", desc: "Live meeting transcription and notes." },
+  { name: "Sembly", url: "https://www.sembly.ai", desc: "AI meeting assistant for teams." },
+  { name: "Tactiq", url: "https://tactiq.io", desc: "Transcript assistant for Google Meet." },
+  { name: "ElevenLabs", url: "https://www.elevenlabs.io", desc: "AI voice cloning and synthesis." },
+  { name: "Voicemod", url: "https://www.voicemod.net", desc: "Real-time voice changer." },
+  { name: "Play.ht", url: "https://play.ht", desc: "AI text-to-speech voices." },
+  { name: "Papercup", url: "https://www.papercup.com", desc: "Video dubbing with AI voices." },
+  { name: "Reface", url: "https://hey.reface.ai", desc: "Swap faces in videos using AI." },
+  { name: "Lalal.ai", url: "https://www.lalal.ai", desc: "Split music into stems with AI." },
+  { name: "Tabnine", url: "https://www.tabnine.com", desc: "AI code autocomplete assistant." },
+  { name: "Codeium", url: "https://codeium.com", desc: "Free AI code completion." },
+  { name: "Blackbox", url: "https://www.useblackbox.io", desc: "AI code search and writing." },
+  { name: "Harpa AI", url: "https://harpa.ai", desc: "AI Chrome assistant for browsing." },
+  { name: "Caktus AI", url: "https://caktus.ai", desc: "AI writing tool for students." },
+  { name: "Frase", url: "https://www.frase.io", desc: "SEO content optimizer with AI." },
+  { name: "Rytr", url: "https://rytr.me", desc: "Generate content with AI help." },
+  { name: "ShortlyAI", url: "https://www.shortlyai.com", desc: "Write stories with AI." }
+,
+  { name: "Tome", url: "https://tome.app", desc: "AI storytelling and presentation tool." },
+  { name: "Magical", url: "https://www.getmagical.com", desc: "Text expander with AI for teams." },
+  { name: "Puzzle", url: "https://www.puzzlelabs.ai", desc: "AI-based documentation assistant." },
+  { name: "Bardeen", url: "https://www.bardeen.ai", desc: "Automate manual workflows with AI." },
+  { name: "Taskade", url: "https://www.taskade.com", desc: "AI-powered team productivity platform." },
+  { name: "Fotor", url: "https://www.fotor.com", desc: "AI photo editing and design." },
+  { name: "Removeunwantedcontent", url: "https://www.removeunwantedcontent.com", desc: "Erase image content easily." },
+  { name: "Stockimg", url: "https://stockimg.ai", desc: "AI-generated stock images." },
+  { name: "Illustroke", url: "https://illustroke.com", desc: "Create vector illustrations with AI." },
+  { name: "Kaiber", url: "https://kaiber.ai", desc: "AI-generated music videos and visuals." },
+  { name: "Playground AI", url: "https://playgroundai.com", desc: "AI art generator and image editor." },
+  { name: "Beautify", url: "https://beautifyai.com", desc: "AI image beautification tool." },
+  { name: "BigJpg", url: "https://bigjpg.com", desc: "Enlarge images using AI without loss." },
+  { name: "Let's Enhance", url: "https://letsenhance.io", desc: "Photo enhancer using AI." },
+  { name: "Supermeme.ai", url: "https://supermeme.ai", desc: "Create memes with AI text." },
+  { name: "Galileo AI", url: "https://www.usegalileo.ai", desc: "Design UI from text with AI." },
+  { name: "Lumen5", url: "https://lumen5.com", desc: "Create social videos from blogs." },
+  { name: "Animoto", url: "https://animoto.com", desc: "Marketing video maker using AI." },
+  { name: "Steve AI", url: "https://www.steve.ai", desc: "Turn blogs into videos with AI." },
+  { name: "Veed.io", url: "https://www.veed.io", desc: "AI-powered video editing online." },
+  { name: "Wisecut", url: "https://www.wisecut.video", desc: "Auto-cut and subtitle your videos." },
+  { name: "Cleanup My Face", url: "https://cleanup.pictures/face", desc: "Enhance portraits using AI." },
+  { name: "Soundraw", url: "https://soundraw.io", desc: "AI music generator for creators." },
+  { name: "AIVA", url: "https://www.aiva.ai", desc: "Compose music with AI help." },
+  { name: "Boomy", url: "https://boomy.com", desc: "Create and publish music with AI." },
+  { name: "Suno", url: "https://suno.ai", desc: "Generate songs from text prompts." },
+  { name: "Voice.ai", url: "https://voice.ai", desc: "Real-time voice changer for gamers." },
+  { name: "Altered", url: "https://www.altered.ai", desc: "AI voice transformation tool." },
+  { name: "AI Roguelite", url: "https://store.steampowered.com/app/2169980/AI_Roguelite/", desc: "AI dungeon crawler RPG." },
+  { name: "AI Dungeon", url: "https://aidungeon.io", desc: "Interactive AI storytelling game." },
+  { name: "NovelAI", url: "https://novelai.net", desc: "AI-powered story writing assistant." },
+  { name: "Hugging Face", url: "https://huggingface.co", desc: "AI models and datasets hub." },
+  { name: "Reimagine Home", url: "https://reimaginehome.ai", desc: "AI interior design inspiration." },
+  { name: "Interior AI", url: "https://interiorai.com", desc: "Redesign your home with AI." },
+  { name: "RoomGPT", url: "https://www.roomgpt.io", desc: "AI-generated interior mockups." },
+  { name: "FigGPT", url: "https://www.figgpt.com", desc: "Design UI with text using AI." },
+  { name: "PromptHero", url: "https://prompthero.com", desc: "Discover and share AI prompts." },
+  { name: "PromptBase", url: "https://promptbase.com", desc: "Marketplace for AI prompts." },
+  { name: "Kive", url: "https://kive.ai", desc: "Organize creative inspiration with AI." },
+  { name: "FigJam AI", url: "https://www.figma.com/figjam/", desc: "Figma's AI collaboration tool." },
+  { name: "Kaiber", url: "https://www.kaiber.ai", desc: "Turn music into visuals with AI." },
+  { name: "Facetune AI", url: "https://www.facetuneapp.com", desc: "AI selfie and beauty retouch." },
+  { name: "Spline AI", url: "https://spline.design/ai", desc: "3D design generation with AI." },
+  { name: "ChatPDF", url: "https://www.chatpdf.com", desc: "Chat with any PDF file." },
+  { name: "SciSummary", url: "https://www.scisummary.com", desc: "Summarize scientific papers easily." },
+  { name: "Upword", url: "https://www.upword.ai", desc: "Summarize and organize research content." }
+];
+
+document.getElementById("modeToggle").onclick = () => document.body.classList.toggle("dark");
+    document.getElementById("searchInput").addEventListener("input", e => renderTools(e.target.value));
+    window.onload = () => {
+      renderCategoryFilters();
+      renderTools();
+    };
+
+    function renderCategoryFilters() {
+      const categories = [
+        "All", "Chatbots", "Productivity", "Video Tools", "Translation", "Writing", "Website Builders",
+        "Image Tools", "Code Assistants", "Transcription", "Art Generators", "Audio Tools"
+      ];
+      const container = document.getElementById("categoryFilters");
+      for (let category of categories) {
+        const btn = document.createElement("button");
+        btn.textContent = category;
+        btn.style = "margin-right: 8px; padding: 6px 12px; border-radius: 8px; border: none; background: cyan; cursor: pointer;";
+        btn.onclick = () => {
+          if (category === "All") renderTools();
+          else renderTools("", category);
+        };
+        container.appendChild(btn);
+      }
+    }
+
+    function getToolCategory(name) {
+      const categoryMap = {
+  "ChatGPT": "Chatbots",
+  "Notion AI": "Productivity",
+  "Jasper": "Writing",
+  "Copy.ai": "Writing",
+  "Writesonic": "Writing",
+  "QuillBot": "Writing",
+  "Grammarly": "Writing",
+  "Wordtune": "Writing",
+  "Scispace": "Writing",
+  "Perplexity AI": "Chatbots",
+  "Socratic": "Education",
+  "Jenni": "Writing",
+  "Pictory": "Video Tools",
+  "Synthesia": "Video Tools",
+  "Runway ML": "Video Tools",
+  "Fliki": "Video Tools",
+  "Descript": "Video Tools",
+  "Murf": "Audio Tools",
+  "Leonardo AI": "Art Generators",
+  "Dream by Wombo": "Art Generators",
+  "Midjourney": "Art Generators",
+  "DALL·E": "Art Generators",
+  "Remove.bg": "Image Tools",
+  "Cleanup.pictures": "Image Tools",
+  "PhotoRoom": "Image Tools",
+  "Canva AI": "Image Tools",
+  "Looka": "Image Tools",
+  "Runpod": "Productivity",
+  "Durable": "Website Builders",
+  "Browse AI": "Productivity",
+  "Fireflies": "Transcription",
+  "Otter.ai": "Transcription",
+  "Sembly": "Transcription",
+  "Tactiq": "Transcription",
+  "ElevenLabs": "Audio Tools",
+  "Voicemod": "Audio Tools",
+  "Play.ht": "Audio Tools",
+  "Papercup": "Audio Tools",
+  "Reface": "Video Tools",
+  "Lalal.ai": "Audio Tools",
+  "Tabnine": "Code Assistants",
+  "Codeium": "Code Assistants",
+  "Blackbox": "Code Assistants",
+  "Harpa AI": "Chatbots",
+  "Caktus AI": "Writing",
+  "Frase": "Writing",
+  "Rytr": "Writing",
+  "ShortlyAI": "Writing",
+  "Tome": "Writing",
+  "Magical": "Productivity",
+  "Puzzle": "Productivity",
+  "Bardeen": "Productivity",
+  "Taskade": "Productivity",
+  "Fotor": "Image Tools",
+  "Removeunwantedcontent": "Image Tools",
+  "Stockimg": "Image Tools",
+  "Illustroke": "Image Tools",
+  "Kaiber": "Video Tools",
+  "Playground AI": "Art Generators",
+  "Beautify": "Image Tools",
+  "BigJpg": "Image Tools",
+  "Let's Enhance": "Image Tools",
+  "Supermeme.ai": "Image Tools",
+  "Galileo AI": "Website Builders",
+  "Lumen5": "Video Tools",
+  "Animoto": "Video Tools",
+  "Steve AI": "Video Tools",
+  "Veed.io": "Video Tools",
+  "Wisecut": "Video Tools",
+  "Cleanup My Face": "Image Tools",
+  "Soundraw": "Audio Tools",
+  "AIVA": "Audio Tools",
+  "Boomy": "Audio Tools",
+  "Suno": "Audio Tools",
+  "Voice.ai": "Audio Tools",
+  "Altered": "Audio Tools",
+  "AI Roguelite": "Games",
+  "AI Dungeon": "Games",
+  "NovelAI": "Writing",
+  "Hugging Face": "Productivity",
+  "Reimagine Home": "Art Generators",
+  "Interior AI": "Art Generators",
+  "RoomGPT": "Art Generators",
+  "FigGPT": "Website Builders",
+  "PromptHero": "Productivity",
+  "PromptBase": "Productivity",
+  "Kive": "Productivity",
+  "FigJam AI": "Productivity",
+  "Facetune AI": "Image Tools",
+  "Spline AI": "Art Generators",
+  "ChatPDF": "Productivity",
+  "SciSummary": "Writing",
+  "Upword": "Writing"
+}; // keep this part unchanged
+      return categoryMap[name] || "Other";
+    }
+
+    function renderTools(filter = "", category = null) {
+      const container = document.getElementById("tools");
+      container.innerHTML = "";
+      for (let tool of tools) {
+        const matchesSearch = tool.name.toLowerCase().includes(filter.toLowerCase());
+        const matchesCategory = !category || getToolCategory(tool.name) === category;
+        if (matchesSearch && matchesCategory) {
+          const hostname = new URL(tool.url).hostname;
+          const logoURL = `https://logo.clearbit.com/${hostname}`;
+          const a = document.createElement("a");
+          a.href = tool.url;
+          a.target = "_blank";
+          a.className = "tool-card";
+          a.innerHTML = `
+            <img src="${logoURL}" alt="${tool.name} logo" onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/6/6b/Artificial_intelligence_icon.png'" />
+            <span>${tool.name}</span>
+            <div class="tool-description">${tool.desc}</div>
+          `;
+          container.appendChild(a);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
